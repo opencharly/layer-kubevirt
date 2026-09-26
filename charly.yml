@@ -1,0 +1,44 @@
+# layer-kubevirt — the virtctl CLI (the KubeVirt client).
+#
+# Installs the pinned virtctl release binary at /usr/bin/virtctl. virtctl is the
+# operator-facing client for a KubeVirt cluster: start/stop/restart a VM, open the
+# serial console or VNC, `virtctl ssh`/`port-forward` into a guest, create a
+# VirtualMachineInstanceMigration, and so on. It is the client the
+# `charly kubevirt` CLI shells out to for console/ssh/port-forward.
+#
+# Standalone repo (the candy de-submodule cutover, kind-prefixed naming): the
+# candy manifest is the repo root charly.yml; the charly resolver fetches this
+# repo at the pinned tag.
+version: 2026.261.1747
+kubevirt:
+    candy:
+        version: 2026.269.0030
+        description: |
+            virtctl — the KubeVirt CLI client at a stable /usr/bin path.
+            Installs the pinned virtctl release binary (github.com/kubevirt/kubevirt
+            releases) for the target arch. virtctl drives a KubeVirt cluster from the
+            command line: start/stop/restart a VirtualMachine, open its serial console
+            or VNC, ssh/port-forward into the guest, snapshot, and live-migrate. The
+            installed binary is asserted to exist and to report its version, so any box
+            or deploy that composes this candy can reach a KubeVirt cluster with no
+            further setup. It is the client candy/plugin-kubevirt shells out to for the
+            `charly kubevirt console/ssh/port-forward` verbs.
+        var:
+            KUBEVIRT_VERSION: v1.9.0
+        plan:
+            - run: download the pinned virtctl binary (the declarative download verb — content-addressed cache, atomic rename; ARCH is the auto-exported TARGETARCH amd64/arm64, which is the KubeVirt release asset naming)
+              download: "https://github.com/kubevirt/kubevirt/releases/download/${KUBEVIRT_VERSION}/virtctl-${KUBEVIRT_VERSION}-linux-${ARCH}"
+              extract: none
+              to: /usr/bin/virtctl
+              mode: "0755"
+              unless_exists: /usr/bin/virtctl
+              run_as: root
+            - check: the virtctl client binary is installed at /usr/bin/virtctl
+              file:
+                file: /usr/bin/virtctl
+                exists: true
+            - check: virtctl reports its version and exits cleanly
+              exit_status: 0
+              stdout:
+                - contains: "Client Version"
+              command: /usr/bin/virtctl version --client
