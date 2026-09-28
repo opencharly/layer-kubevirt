@@ -9,10 +9,8 @@
 # Standalone repo (the candy de-submodule cutover, kind-prefixed naming): the
 # candy manifest is the repo root charly.yml; the charly resolver fetches this
 # repo at the pinned tag.
-version: 2026.261.1747
 kubevirt:
     candy:
-        version: 2026.269.0030
         description: |
             virtctl — the KubeVirt CLI client at a stable /usr/bin path.
             Installs the pinned virtctl release binary (github.com/kubevirt/kubevirt
